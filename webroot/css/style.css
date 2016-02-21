@@ -1,3 +1,47 @@
 h1 {
 	text-align:center;
 }
+
+h3 {
+	text-align:center;
+}
+
+table.tableAlign {
+ 	margin-left: auto;
+ 	margin-right: auto;
+	border-collapse: collapse;
+}
+
+.tableHeader {
+	background-color: #BBBBBB;
+}
+
+.colColor {
+	background-color: #EEEEEE;
+}
+
+.ctrlArea {
+	text-align:center;
+}
+
+.departmentSelect {
+	width: 380px;
+}
+
+.mailaddressBox {
+	width: 380px;
+}
+
+.registBtn {
+ 	text-align: right;
+}
+
+tr.userlist td.userlist {
+	border: black solid 1px;
+	padding: 5px;
+}
+
+tr.useredit td.useredit {
+	padding: 5px;
+}
+

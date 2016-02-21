@@ -27,6 +27,11 @@ class UserMastersTable extends Table
         $this->table('user_masters');
         $this->displayField('uid');
         $this->primaryKey('uid');
+        
+        $this->hasOne('DepartmentMasters', [
+            'foreignKey' => 'departmentcd',
+            'joinType' => 'INNER'
+        ]);
     }
 
     /**

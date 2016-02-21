@@ -4,7 +4,7 @@
     <?= $this->Html->css('style.css') ?>
 	</head>
     <body>
-        <h1>Top</h1>
+        <h1><?= $title ?></h1>
         <?= $this->fetch('content') ?>
     </body>
 </html>

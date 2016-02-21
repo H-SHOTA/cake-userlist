@@ -19,10 +19,18 @@ class UserMastersController extends AppController
     public function index()
     {
         $this->viewBuilder()->layout('layout');
-        $userMasters = $this->paginate($this->UserMasters);
+        
+        $this->set('title', 'ユーザー管理TOP');
 
+        $this->loadModel('DepartmentMasters');
+        
+        $query = $this->DepartmentMasters->find()->contain(['SectionMasters']);
+        $sections = $this->paginate($query);
+        $this->set(compact('sections'));
+
+        $userMasters = $this->UserMasters->find('all');
         $this->set(compact('userMasters'));
-        $this->set('_serialize', ['userMasters']);
+        $this->set('_serialize', ['userMasters', 'sections']);
     }
 
     /**
