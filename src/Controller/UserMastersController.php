@@ -11,6 +11,36 @@ use App\Controller\AppController;
 class UserMastersController extends AppController
 {
 
+    private function getUserList($departmentcd, $deleteflg)
+    {
+        $userMasters =  $this->UserMasters->find()
+                        ->hydrate(false)
+                        ->join([
+                            'c' => [
+                                'table' => 'department_masters',
+                                'type' => 'INNER',
+                                'conditions' => 'c.departmentcd = UserMasters.departmentcd',
+                            ],
+                            'd' => [
+                                'table' => 'section_masters',
+                                'type' => 'LEFT',
+                                'conditions' => 'c.sectioncd = d.sectioncd',
+                            ],
+                        ])->select([
+                            "uid" => "UserMasters.uid",
+                            "familyname" => "UserMasters.familyname",
+                            "firstname" => "UserMasters.firstname",
+                            "mailaddress" => "UserMasters.mailaddress",
+                            "deleteflg" => "UserMasters.deleteflg",
+                            "departmentcd" => "c.departmentcd",
+                            "departmentname" => "c.departmentname",
+                            "sectionname" => 'd.sectionname'
+                        ]);
+        $conditions = array();
+        (!empty($departmentcd))?($conditions[] = 'c.departmentcd='.$departmentcd):'';
+        ($deleteflg == 'on')?'':$conditions[] = 'UserMasters.deleteflg=0';
+        return $userMasters->where($conditions);
+    }
     /**
      * Index method
      *
@@ -28,28 +58,9 @@ class UserMastersController extends AppController
         $sections = $this->paginate($query);
         $this->set(compact('sections'));
 
-        $userMasters = $this->UserMasters->find()
-            ->hydrate(false)
-            ->join([
-                'c' => [
-                    'table' => 'department_masters',
-                    'type' => 'INNER',
-                    'conditions' => 'c.departmentcd = UserMasters.departmentcd',
-                ],
-                'd' => [
-                    'table' => 'section_masters',
-                    'type' => 'LEFT',
-                    'conditions' => 'c.sectioncd = d.sectioncd',
-                ],
-            ])->select([
-                "uid" => "UserMasters.uid",
-                "familyname" => "UserMasters.familyname",
-                "firstname" => "UserMasters.firstname",
-                "mailaddress" => "UserMasters.mailaddress",
-                "deleteflg" => "UserMasters.deleteflg",
-                "departmentname" => "c.departmentname",
-                "sectionname" => 'd.sectionname'
-            ]);;
+        $userMasters = $this->getUserList(
+            $this->request->data('department'), $this->request->data('containDlt'));
+
         $this->set(compact('userMasters'));
         $this->set('_serialize', ['userMasters', 'sections']);
     }

@@ -1,9 +1,9 @@
 <div class="ctrlArea" >
-    <form method='post' action='/top'> 
+    <form method='post' action='/UserMasters'> 
         <select name = "department">
             <option value=""></option>  
                 <?php foreach ($sections as $section): ?>
-                    <option value='<?= $section->section_master->sectionname.'/'.$section->departmentname ?>'>
+                    <option value='<?= $section->departmentcd ?>'>
                         <?= $section->section_master->sectionname.' '.$section->departmentname ?>
                     </option>
                 <?php endforeach; ?>   
