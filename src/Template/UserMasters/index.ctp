@@ -28,11 +28,19 @@
             <?php foreach ($userMasters as $userMaster): ?>
             <tr class="userlist">
                 <td class="userlist">
-                    <?= $this->Html->link(__(h($userMaster->familyname.' '.$userMaster->firstname)), ['action' => 'edit', $userMaster->uid]) ?>
+                    <?= $this->Html->link(__(h($userMaster['familyname'].' '.$userMaster['firstname'])), ['action' => 'edit', $userMaster['uid']]) ?>
                 </td>
-                <td class="userlist"><?= $this->Number->format($userMaster->departmentcd) ?></td>
-                <td class="userlist"><?= h($userMaster->mailaddress) ?></td>
-                <td class="userlist"><?= $this->Number->format($userMaster->deleteflg) ?></td>
+                <td class="userlist"><?= h($userMaster['sectionname'].' '.$userMaster['departmentname']) ?></td>
+                <td class="userlist"><?= h($userMaster['mailaddress']) ?></td>
+                <td class="userlist">
+                    <?php 
+                        if ($this->Number->format($userMaster['deleteflg']) == 0){
+                            echo '未削除';
+                        } else {
+                            echo '削除済み';
+                        }
+                    ?>
+                </td>
             </tr>
             <?php endforeach; ?>
         </tbody>

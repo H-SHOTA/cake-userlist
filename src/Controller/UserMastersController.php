@@ -28,7 +28,28 @@ class UserMastersController extends AppController
         $sections = $this->paginate($query);
         $this->set(compact('sections'));
 
-        $userMasters = $this->UserMasters->find('all');
+        $userMasters = $this->UserMasters->find()
+            ->hydrate(false)
+            ->join([
+                'c' => [
+                    'table' => 'department_masters',
+                    'type' => 'INNER',
+                    'conditions' => 'c.departmentcd = UserMasters.departmentcd',
+                ],
+                'd' => [
+                    'table' => 'section_masters',
+                    'type' => 'LEFT',
+                    'conditions' => 'c.sectioncd = d.sectioncd',
+                ],
+            ])->select([
+                "uid" => "UserMasters.uid",
+                "familyname" => "UserMasters.familyname",
+                "firstname" => "UserMasters.firstname",
+                "mailaddress" => "UserMasters.mailaddress",
+                "deleteflg" => "UserMasters.deleteflg",
+                "departmentname" => "c.departmentname",
+                "sectionname" => 'd.sectionname'
+            ]);;
         $this->set(compact('userMasters'));
         $this->set('_serialize', ['userMasters', 'sections']);
     }
