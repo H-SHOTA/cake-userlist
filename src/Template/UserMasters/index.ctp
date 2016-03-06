@@ -12,7 +12,7 @@
         <input type="hidden" name="containDlt" value='off'/>
         <input type="checkbox" name="containDlt">削除済みを含める</input>
     </form>
-    <input type="button" value="新規登録" onclick="location.href='edit/'">
+    <input type="button" value="新規登録" onclick="location.href='/user-masters/add/'">
 </div>
 <div class="ctrlArea">
     <table cellpadding="0" cellspacing="0" class="tableAlign">

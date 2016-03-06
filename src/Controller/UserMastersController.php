@@ -2,7 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
-
+use Cake\ORM\TableRegistry;
 /**
  * UserMasters Controller
  *
@@ -89,18 +89,73 @@ class UserMastersController extends AppController
      */
     public function add()
     {
-        $userMaster = $this->UserMasters->newEntity();
+        $this->autoRender = false;
+        $this->viewBuilder()->layout('layout');
         if ($this->request->is('post')) {
-            $userMaster = $this->UserMasters->patchEntity($userMaster, $this->request->data);
-            if ($this->UserMasters->save($userMaster)) {
-                $this->Flash->success(__('The user master has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The user master could not be saved. Please, try again.'));
+            if (!is_null($this->request->data('confirm'))) {
+                $this->set('title', 'ユーザー登録確認');
+                $this->loadModel('DepartmentMasters');
+                $query = $this->DepartmentMasters
+                    ->find()
+                        ->hydrate(false)
+                    ->contain(['SectionMasters'])
+                    ->where('departmentcd='.$this->request->data('department'));
+                $section = $this->paginate($query);
+                $this->set('data', $this->request->data);
+                $this->set('section', $section->first());
+                $this->render('confirm');  
+            } elseif (!is_null($this->request->data('regist'))) {
+                $this->set('title', 'ユーザー登録完了');
+                $table = TableRegistry::get('user_masters');
+                // 新しいクエリを始めます。
+                $query = $table->find();
+                
+                $data =[
+                        'uid' => ($query->select(['max' => $query->func()->max('uid')])->first()['max'] + 1), 
+                        'departmentcd' => $this->request->data('department'),
+                        'familyname' => $this->request->data('sei'),
+                        'firstname' => $this->request->data('mei'),
+                        'familykana' => $this->request->data('seiKana'),
+                        'firstkana' => $this->request->data('meiKana'),
+                        'mailaddress' => $this->request->data('mailaddress'),
+                        'deleteflg' => (($this->request->data('deleteflg') == 'delete')?'1':'0'),
+                        'insdate' => date('Y-m-d H:i:s'),
+                        'lastupdate' => date('Y-m-d H:i:s')
+                    ];
+                $query->insert( ['uid', 
+                     'departmentcd',
+                     'familyname',
+                     'firstname',
+                     'familykana',
+                     'firstkana',
+                     'mailaddress',
+                     'deleteflg',
+                     'insdate',
+                     'lastupdate']);
+                $query->values($data);
+                $query->execute();
+                
+                $this->loadModel('DepartmentMasters');
+                $query = $this->DepartmentMasters
+                    ->find()
+                        ->hydrate(false)
+                    ->contain(['SectionMasters'])
+                    ->where('departmentcd='.$this->request->data('department'));
+                $section = $this->paginate($query);
+                $this->set('data', $this->request->data);
+                $this->set('section', $section->first());
+                $this->render('confirm');  
             }
+        } else {
+            $this->set('title', 'ユーザー新規登録');
+            $this->loadModel('DepartmentMasters');
+             
+            $query = $this->DepartmentMasters->find()->contain(['SectionMasters']);
+            $sections = $this->paginate($query);
+
+            $this->set('sections', $sections);
+            $this->render('edit');  
         }
-        $this->set(compact('userMaster'));
-        $this->set('_serialize', ['userMaster']);
     }
 
     /**

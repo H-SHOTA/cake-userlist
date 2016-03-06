@@ -1,31 +1,70 @@
-<nav class="large-3 medium-4 columns" id="actions-sidebar">
-    <ul class="side-nav">
-        <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Form->postLink(
-                __('Delete'),
-                ['action' => 'delete', $userMaster->uid],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $userMaster->uid)]
-            )
-        ?></li>
-        <li><?= $this->Html->link(__('List User Masters'), ['action' => 'index']) ?></li>
-    </ul>
-</nav>
-<div class="userMasters form large-9 medium-8 columns content">
-    <?= $this->Form->create($userMaster) ?>
-    <fieldset>
-        <legend><?= __('Edit User Master') ?></legend>
-        <?php
-            echo $this->Form->input('departmentcd');
-            echo $this->Form->input('familyname');
-            echo $this->Form->input('firstname');
-            echo $this->Form->input('familykana');
-            echo $this->Form->input('firstkana');
-            echo $this->Form->input('mailaddress');
-            echo $this->Form->input('deleteflg');
-            echo $this->Form->input('insdate');
-            echo $this->Form->input('lastupdate');
-        ?>
-    </fieldset>
-    <?= $this->Form->button(__('Submit')) ?>
-    <?= $this->Form->end() ?>
-</div>
+    <div class="ctrlArea" >
+    <form method='post' action='/user-masters/add/'> 
+        <table  class='tableAlign'> 
+            <tr class='useredit'>
+                <th class='useredit'>名前：</th>
+                <th class='useredit'>
+                    <input type='textbox' 
+                           name='sei' 
+                           value=''/>
+                </th>
+                <th class='useredit'>
+                    <input 
+                        type='textbox' 
+                        name='mei' 
+                        value=''/>
+                </th>
+            </tr>
+            <tr class='useredit'>
+                <th class='useredit'>カナ：</th>
+                <th class='useredit'>
+                    <input 
+                        type='textbox' 
+                        name='seiKana' 
+                        value=''/>
+                </th>
+                <th class='useredit'>
+                    <input 
+                        type='textbox' 
+                        name='meiKana' 
+                        value=''/>
+                </th>
+            </tr>
+            <tr class='useredit'>
+                <th class='useredit'>所属：</th>
+                <th class='useredit' colspan="2">
+                    <select name = "department">
+                        <option value=""></option>  
+                            <?php foreach ($sections as $section): ?>
+                                <option value='<?= $section->departmentcd ?>'>
+                                    <?= $section->section_master->sectionname.' '.$section->departmentname ?>
+                                </option>
+                            <?php endforeach; ?>   
+                    </select>
+                </th>
+            </tr>
+            <tr class='useredit'>
+                <th class='useredit'>メールアドレス：</th>
+                <th class='useredit' colspan="2">
+                    <input 
+                        type='textbox' 
+                        name='mailaddress' 
+                        class='mailaddressBox'
+                        value=''/>
+                </th>
+            </tr>
+            <tr class='useredit'>
+                <th class='useredit'>削除フラグ：</th>
+                <th class='useredit' colspan="2">
+                    <input type="radio" name="deleteflg" value="nodelete" > 未削除
+                    <input type="radio" name="deleteflg" value="deleted"　> 削除済み
+                </th>
+            </tr>
+            <tr>
+                <th colspan="3" class='registBtn'>
+                    <input name='confirm' type="submit" value="登録">
+                </th>
+            </tr>
+        </table><br>
+        </form>
+    </div>
