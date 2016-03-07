@@ -37,7 +37,7 @@ class UserMastersController extends AppController
                             "sectionname" => 'd.sectionname'
                         ]);
         $conditions = array();
-        (!empty($departmentcd))?($conditions[] = 'c.departmentcd='.$departmentcd):'';
+        (strlen($departmentcd) > 0)?($conditions[] = 'c.departmentcd='.$departmentcd):'';
         ($deleteflg == 'on')?'':$conditions[] = 'UserMasters.deleteflg=0';
         return $userMasters->where($conditions);
     }
@@ -103,42 +103,62 @@ class UserMastersController extends AppController
                 $section = $this->paginate($query);
                 $this->set('data', $this->request->data);
                 $this->set('section', $section->first());
+                var_dump($this->request->data);
                 $this->render('confirm');  
             } elseif (!is_null($this->request->data('regist'))) {
                 $this->set('title', 'ユーザー登録完了');
                 $table = TableRegistry::get('user_masters');
                 // 新しいクエリを始めます。
                 $query = $table->find();
-                
-                $data =[
-                        'uid' => ($query->select(['max' => $query->func()->max('uid')])->first()['max'] + 1), 
-                        'departmentcd' => $this->request->data('department'),
-                        'familyname' => $this->request->data('sei'),
-                        'firstname' => $this->request->data('mei'),
-                        'familykana' => $this->request->data('seiKana'),
-                        'firstkana' => $this->request->data('meiKana'),
-                        'mailaddress' => $this->request->data('mailaddress'),
-                        'deleteflg' => (($this->request->data('deleteflg') == 'delete')?'1':'0'),
-                        'insdate' => date('Y-m-d H:i:s'),
-                        'lastupdate' => date('Y-m-d H:i:s')
-                    ];
-                $query->insert( ['uid', 
-                     'departmentcd',
-                     'familyname',
-                     'firstname',
-                     'familykana',
-                     'firstkana',
-                     'mailaddress',
-                     'deleteflg',
-                     'insdate',
-                     'lastupdate']);
-                $query->values($data);
-                $query->execute();
-                
+                var_dump($this->request->data);
+                if (is_null($this->request->data('update'))) {
+                    $data =[
+                            'uid' => ($query->select(['max' => $query->func()->max('uid')])->first()['max'] + 1), 
+                            'departmentcd' => $this->request->data('department'),
+                            'familyname' => $this->request->data('sei'),
+                            'firstname' => $this->request->data('mei'),
+                            'familykana' => $this->request->data('seiKana'),
+                            'firstkana' => $this->request->data('meiKana'),
+                            'mailaddress' => $this->request->data('mailaddress'),
+                            'deleteflg' => (($this->request->data('deleteflg') == 'delete')?'1':'0'),
+                            'insdate' => date('Y-m-d H:i:s'),
+                            'lastupdate' => date('Y-m-d H:i:s')
+                        ];
+                    $query->insert( ['uid', 
+                         'departmentcd',
+                         'familyname',
+                         'firstname',
+                         'familykana',
+                         'firstkana',
+                         'mailaddress',
+                         'deleteflg',
+                         'insdate',
+                         'lastupdate']);
+                    $query->values($data);
+                    $query->execute();
+                    var_dump('insert');
+                } else {
+                    $data =[
+                            'departmentcd' => $this->request->data('department'),
+                            'familyname' => $this->request->data('sei'),
+                            'firstname' => $this->request->data('mei'),
+                            'familykana' => $this->request->data('seiKana'),
+                            'firstkana' => $this->request->data('meiKana'),
+                            'mailaddress' => $this->request->data('mailaddress'),
+                            'deleteflg' => (($this->request->data('deleteflg') == 'delete')?'1':'0'),
+                            'lastupdate' => date('Y-m-d H:i:s')
+                        ];
+                    $query->update()
+                          ->set($data)
+                          ->where(['uid' => $this->request->data('uid')]);
+                    $query->execute();  
+                    var_dump('update');              
+                }
+
                 $this->loadModel('DepartmentMasters');
                 $query = $this->DepartmentMasters
                     ->find()
-                        ->hydrate(false)
+                    ->hydrate(false)
                     ->contain(['SectionMasters'])
                     ->where('departmentcd='.$this->request->data('department'));
                 $section = $this->paginate($query);
@@ -153,6 +173,7 @@ class UserMastersController extends AppController
             $query = $this->DepartmentMasters->find()->contain(['SectionMasters']);
             $sections = $this->paginate($query);
 
+            $this->set('user', null);
             $this->set('sections', $sections);
             $this->render('edit');  
         }
@@ -167,20 +188,42 @@ class UserMastersController extends AppController
      */
     public function edit($id = null)
     {
-        $userMaster = $this->UserMasters->get($id, [
-            'contain' => []
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $userMaster = $this->UserMasters->patchEntity($userMaster, $this->request->data);
-            if ($this->UserMasters->save($userMaster)) {
-                $this->Flash->success(__('The user master has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The user master could not be saved. Please, try again.'));
-            }
-        }
-        $this->set(compact('userMaster'));
-        $this->set('_serialize', ['userMaster']);
+        $this->viewBuilder()->layout('layout');
+        $this->set('title', 'ユーザー情報編集');
+        
+        $this->loadModel('DepartmentMasters');
+        $query = $this->DepartmentMasters->find()->contain(['SectionMasters']);
+        $sections = $this->paginate($query);
+        $this->set('sections', $sections);
+
+        $userMasters =  $this->UserMasters->find()
+                        ->hydrate(false)
+                        ->join([
+                            'c' => [
+                                'table' => 'department_masters',
+                                'type' => 'INNER',
+                                'conditions' => 'c.departmentcd = UserMasters.departmentcd',
+                            ],
+                            'd' => [
+                                'table' => 'section_masters',
+                                'type' => 'LEFT',
+                                'conditions' => 'c.sectioncd = d.sectioncd',
+                            ],
+                        ])->select([
+                            "uid" => "UserMasters.uid",
+                            "familyname" => "UserMasters.familyname",
+                            "firstname" => "UserMasters.firstname",
+                            "familykana" => "UserMasters.familykana",
+                            "firstkana" => "UserMasters.firstkana",
+                            "mailaddress" => "UserMasters.mailaddress",
+                            "deleteflg" => "UserMasters.deleteflg",
+                            "departmentcd" => "c.departmentcd",
+                            "departmentname" => "c.departmentname",
+                            "sectionname" => 'd.sectionname'
+                        ]);
+        $user = $userMasters->where('UserMasters.uid='.$id)->first();
+        $this->set('user', $user);
+        var_dump($user);
     }
 
     /**
